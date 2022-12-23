@@ -33,13 +33,6 @@ Multi container pods can communicate to each other through localhost
 
 Resources in a namespace can refer to each other by their names
 
-To connect to another service in a different namespace: we use the following syntax:
-```
-<service-name>.<namespace>.<svc>.<domain>
-test-service.test-ns.svc.cluster.local
-
-```
-
 ```
 pods have a 1 to 1 relationship with containers
 entrypoint in docker -> command in kubernetes
@@ -205,6 +198,12 @@ kubectl config set-context $(kubectl config current-context) -n <namespace-name>
 
 ----
 
+To connect to another service in a different namespace: we use the following syntax:
+```
+<service-name>.<namespace>.<svc>.<domain>
+test-service.test-ns.svc.cluster.local
+
+```
 
 ```console
 kubectl expose pod <pod-name> --type=<type> --port=<port> --name=<service-name>
