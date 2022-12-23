@@ -1,6 +1,6 @@
-# Kubernetes Commands I Use
+# Kubernetes 
 
-A list of Kubernetes commands i use
+A list of Kubernetes templates and commands
 
 ## Table of Contents
 
@@ -48,11 +48,14 @@ kube public - resources to be made available to all users
 
 ## Pod
 
+
 ---
 
 Single instance of an application (smallest object we can create in k8)
 
 We scale pods up or down
+
+[Pod Definition file](templates/deployment.yml)
 
 ```console
 kubectl get pods -o wide
@@ -105,10 +108,13 @@ kubectl explain pods --recursive | grep envFrom -A<number-of-lines>
 ---
 
 ```
-Replication controller is in v1
-replicaset in apps/v1
-replica set uses selector to determine pods to watch and manage even existing pods
+Replication controller is in v1 while replicaset in apps/v1
+
+Replica set uses selector to determine pods to watch and manage even existing pods
+
 ```
+[Replicaset Definition file ](templates/replicaset.yaml)
+[Replicationcontroller Definition file](templates/replicationcontroller.yaml)
 
 ```console
 kubectl create -f definition.yml
@@ -161,6 +167,8 @@ kubectl scale --replicas=0 replicaset/<replicaset-name>
 
 ---
 
+[Deployment Definition file ](templates/deployment.yml)
+
 ```console
 kubectl create deployment nginx --image=nginx
 ```
@@ -187,6 +195,8 @@ kubectl create deploy redis-deploy --image=redis --replicas=2 -n dev-ns
 
 ---
 
+[Namespace Definition file ](templates/namespace.yml)
+[Resource Quota Definition file](templates/resourcequota.yml)
 ```console
 kubectl create ns <namespace-name>
 ```
