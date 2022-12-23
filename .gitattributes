@@ -1,2 +1,2 @@
-templates/* linguist-documentation=false
-templates/* linguist-vendored
+*.yaml linguist-detectable=true
+*.yaml linguist-language=YAML
