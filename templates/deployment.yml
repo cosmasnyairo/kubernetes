@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-deployment
+  labels:
+    app: myapp
+    type: demo-deploy
+spec:
+  template:
+    metadata:
+      name: <<pod-name>>
+      labels:
+        app: <<label-value>>
+        type: <<label-value>>
+    spec:
+      containers:
+        # multiple containers
+        - name: nginx-container
+          image: nginx
+        - name: database-container
+          image: mysql
+  replicas: 2
+  selector:
+    matchLabels:
+      type: demo-pod

@@ -6,7 +6,9 @@ A list of Kubernetes commands i use
 - [Notes](#notes)
 - [Pod](#pod)
 - [Replication Controller and replicaset](#replication-controller-and-replicaset)
-- [Services](#Services)
+- [Deployments](#deployments)
+- [Namespaces](#namespaces)
+- [Services](#services)
 - [Config Map](#config-map)
 - [Secrets](#secrets)
 - [Service Account](#service-account)
@@ -14,6 +16,7 @@ A list of Kubernetes commands i use
 ## Notes
 
 ----
+
 Cluster is a collection of nodes
 
 Master node has:
@@ -26,10 +29,23 @@ Worked node has:
 -  kubelet (agent in each node in cluster that ensures containers running on nodes as expected)
 -  runtime (software to run containers in the background i.e docker)
 
+Multi container pods can communicate to each other through localhost
+
+Resources in a namespace can refer to each other by their names
+
+To connect to another service in a different namespace: we use the following syntax:
+```
+<service-name>.<namespace>.<svc>.<domain>
+test-service.test-ns.svc.cluster.local
+
+```
+
 ```
 pods have a 1 to 1 relationship with containers
 entrypoint in docker -> command in kubernetes
 cmd in docker -> args in kubernetes
+kube system - resources for internal purposes for kubernetes
+kube public - resources to be made available to all users
 ```
 
 ----
@@ -38,8 +54,21 @@ cmd in docker -> args in kubernetes
 
 ----
 
+Single instance of an application (smallest object we can create in k8)
+
+We scale pods up or down
+
+
 ``` console
 kubectl get pods -o wide
+```
+
+``` console
+kubectl get pods -A
+```
+
+```console
+kubectl label pod/<pod-name> <label>=<value>
 ```
 
 ``` console
@@ -47,7 +76,11 @@ kubectl get pods,svc
 ```
 
 ``` console
-kubectl run pod <pod-name> --image <image-name> --dry-run=client -o yaml > test.yaml
+kubectl run <pod-name> --image=<image-name>  -n <namespace> --dry-run=client -o yaml > test.yaml
+```
+
+```console
+kubectl set image pod <pod-name> <container-name>=<image>
 ```
 
 ``` console
@@ -74,7 +107,14 @@ kubectl explain pods --recursive | grep envFrom -A<number-of-lines>
 
 ## Replication Controller and Replicaset
 
+
 ----
+
+```
+Replication controller is in v1
+replicaset in apps/v1
+replica set uses selector to determine pods to watch and manage even existing pods
+```
 
 ```console
 kubectl create -f definition.yml
@@ -85,12 +125,10 @@ kubectl get replicationcontroller
 ```
 
 ```console
-
-kubectl get replicaset
+kubectl get rs
 ```
 
 ```console
-
 kubectl delete replicaset <replicaset-name>
 ```
 
@@ -98,6 +136,10 @@ kubectl delete replicaset <replicaset-name>
 kubectl edit replicaset <replicaset-name>
 ```
 
+```console
+kubectl set image rs <replica-set> <container-name>=<image>
+
+```
 ```console
 kubectl describe replicaset <replicaset-name>
 ```
@@ -133,7 +175,7 @@ kubectl scale deploy/webapp --replicas=3
 ```
 
 ```console
-kubectl get deployment 
+kubectl get deploy
 ```
 
 ```console
@@ -145,12 +187,31 @@ kubectl create deploy redis-deploy --image=redis --replicas=2 -n dev-ns
 ```
 ----
 
-## Services
+## Namespaces
 
 ----
 
 ```console
-kubectl expose pod redis --port=6379 --name redis-service - create service
+kubectl create ns <namespace-name>
+```
+
+```console
+kubectl config set-context $(kubectl config current-context) -n <namespace-name>
+```
+
+----
+
+## Services
+
+----
+
+
+```console
+kubectl expose pod <pod-name> --type=<type> --port=<port> --name=<service-name>
+```
+
+```console
+kubectl create service <type> <service-name> --tcp=<port>
 ```
 
 ----
