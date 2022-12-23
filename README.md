@@ -54,7 +54,7 @@ Single instance of an application (smallest object we can create in k8)
 
 We scale pods up or down
 
-- [ ] [Pod Definition file](templates/deployment.yml)
+- [ ] [Pod Definition file](definition-files/deployment.yml)
 
 ```console
 kubectl get pods -o wide
@@ -112,8 +112,8 @@ Replication controller is in v1 while replicaset in apps/v1
 Replica set uses selector to determine pods to watch and manage even existing pods
 
 ```
-- [ ] [Replicaset Definition file ](templates/replicaset.yaml)
-- [ ] [Replicationcontroller Definition file](templates/replicationcontroller.yaml)
+- [ ] [Replicaset Definition file ](definition-files/replicaset.yaml)
+- [ ] [Replicationcontroller Definition file](definition-files/replicationcontroller.yaml)
 
 ```console
 kubectl create -f definition.yml
@@ -166,7 +166,7 @@ kubectl scale --replicas=0 replicaset/<replicaset-name>
 
 ---
 
-- [ ] [Deployment Definition file ](templates/deployment.yml)
+- [ ] [Deployment Definition file ](definition-files/deployment.yml)
 
 ```console
 kubectl create deployment nginx --image=nginx
@@ -194,8 +194,8 @@ kubectl create deploy redis-deploy --image=redis --replicas=2 -n dev-ns
 
 ---
 
-- [ ] [Namespace Definition file ](templates/namespace.yml)
-- [ ] [Resource Quota Definition file](templates/resourcequota.yml)
+- [ ] [Namespace Definition file ](definition-files/namespace.yml)
+- [ ] [Resource Quota Definition file](definition-files/resourcequota.yml)
 ```console
 kubectl create ns <namespace-name>
 ```
