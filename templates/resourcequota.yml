@@ -10,4 +10,3 @@ spec:
     requests.memory: 4Gi
     limits.cpu: "10"
     limits.memory: 8Gi
-    

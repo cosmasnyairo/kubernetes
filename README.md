@@ -3,6 +3,7 @@
 A list of Kubernetes commands i use
 
 ## Table of Contents
+
 - [Notes](#notes)
 - [Pod](#pod)
 - [Replication Controller and replicaset](#replication-controller-and-replicaset)
@@ -15,19 +16,21 @@ A list of Kubernetes commands i use
 
 ## Notes
 
-----
+---
 
 Cluster is a collection of nodes
 
 Master node has:
-- api sever  (frontend for kube)
+
+- api sever (frontend for kube)
 - etcd (key store for data used to manage cluster)
-- scheduler  (assigns containers to nodes)
+- scheduler (assigns containers to nodes)
 - controller (bring up containers when they go down)
 
 Worked node has:
--  kubelet (agent in each node in cluster that ensures containers running on nodes as expected)
--  runtime (software to run containers in the background i.e docker)
+
+- kubelet (agent in each node in cluster that ensures containers running on nodes as expected)
+- runtime (software to run containers in the background i.e docker)
 
 Multi container pods can communicate to each other through localhost
 
@@ -41,22 +44,21 @@ kube system - resources for internal purposes for kubernetes
 kube public - resources to be made available to all users
 ```
 
-----
+---
 
 ## Pod
 
-----
+---
 
 Single instance of an application (smallest object we can create in k8)
 
 We scale pods up or down
 
-
-``` console
+```console
 kubectl get pods -o wide
 ```
 
-``` console
+```console
 kubectl get pods -A
 ```
 
@@ -64,11 +66,11 @@ kubectl get pods -A
 kubectl label pod/<pod-name> <label>=<value>
 ```
 
-``` console
+```console
 kubectl get pods,svc
 ```
 
-``` console
+```console
 kubectl run <pod-name> --image=<image-name>  -n <namespace> --dry-run=client -o yaml > test.yaml
 ```
 
@@ -76,32 +78,31 @@ kubectl run <pod-name> --image=<image-name>  -n <namespace> --dry-run=client -o 
 kubectl set image pod <pod-name> <container-name>=<image>
 ```
 
-``` console
+```console
 kubectl get pod <pod-name> -o yaml > pod-definition.yaml
 ```
 
-``` console
+```console
 kubectl apply -f test.yaml
 ```
 
-``` console
+```console
 kubeclt edit pod <pod-name>
 ```
 
-``` console
+```console
 kubectl explain pods --recursive | less
 ```
 
-``` console
+```console
 kubectl explain pods --recursive | grep envFrom -A<number-of-lines>
 ```
 
-----
+---
 
 ## Replication Controller and Replicaset
 
-
-----
+---
 
 ```
 Replication controller is in v1
@@ -133,12 +134,13 @@ kubectl edit replicaset <replicaset-name>
 kubectl set image rs <replica-set> <container-name>=<image>
 
 ```
+
 ```console
 kubectl describe replicaset <replicaset-name>
 ```
 
 ```console
-kubectl apply -f definition.yml  
+kubectl apply -f definition.yml
 ```
 
 ```console
@@ -153,14 +155,14 @@ kubectl scale -replicas=10 -f definition.yml
 kubectl scale --replicas=0 replicaset/<replicaset-name>
 ```
 
-----
+---
 
 ## Deployments
 
-----
+---
 
 ```console
-kubectl create deployment nginx --image=nginx 
+kubectl create deployment nginx --image=nginx
 ```
 
 ```console
@@ -178,11 +180,12 @@ kubectl delete deployment <deployment -name>
 ```console
 kubectl create deploy redis-deploy --image=redis --replicas=2 -n dev-ns
 ```
-----
+
+---
 
 ## Namespaces
 
-----
+---
 
 ```console
 kubectl create ns <namespace-name>
@@ -192,13 +195,14 @@ kubectl create ns <namespace-name>
 kubectl config set-context $(kubectl config current-context) -n <namespace-name>
 ```
 
-----
+---
 
 ## Services
 
-----
+---
 
 To connect to another service in a different namespace: we use the following syntax:
+
 ```
 <service-name>.<namespace>.<svc>.<domain>
 test-service.test-ns.svc.cluster.local
@@ -213,85 +217,85 @@ kubectl expose pod <pod-name> --type=<type> --port=<port> --name=<service-name>
 kubectl create service <type> <service-name> --tcp=<port>
 ```
 
-----
+---
 
 ## Config Map
 
-----
+---
 
 - Imperative
 
-    ```console
+  ```console
 
-    kubectl create configmap \ 
-        app-config --from-literal=APP_COLOR=RED \
-                   --from-literal=APP_TYPE=AAB \
-                   --from-literal=APP_ENV=PROD \
-    ```
+  kubectl create configmap \
+      app-config --from-literal=APP_COLOR=RED \
+                 --from-literal=APP_TYPE=AAB \
+                 --from-literal=APP_ENV=PROD \
+  ```
 
-    ```console
-    kubectl create configmap \ 
-        app-config --from-file=app_config.properties
-    ```
+  ```console
+  kubectl create configmap \
+      app-config --from-file=app_config.properties
+  ```
 
 - Declarative:
 
-    ```console
-    kubectl create -f test-config-map.yml
-    ```
+  ```console
+  kubectl create -f test-config-map.yml
+  ```
 
-    ```console
-    kubectl get configmaps
-    kubectl get cm
-    kubectl describe configmap
-    ```
+  ```console
+  kubectl get configmaps
+  kubectl get cm
+  kubectl describe configmap
+  ```
 
-----
+---
 
 ## Secrets
 
-----
+---
 
 - Imperative
 
-    ```console
-    kubectl create secret generic \
-        app-secret --from-literal=DB_HOST=mysql \
-                   --from-literal=DB_PORT=1000
-                   --from-literal=DB_NAME=test \
-    ```
+  ```console
+  kubectl create secret generic \
+      app-secret --from-literal=DB_HOST=mysql \
+                 --from-literal=DB_PORT=1000
+                 --from-literal=DB_NAME=test \
+  ```
 
-    ```console
-    kubectl create secret generic \
-        app-secret --from-file=test.env
-    ```
+  ```console
+  kubectl create secret generic \
+      app-secret --from-file=test.env
+  ```
 
 - Declarative
-    
-    ```console
-    kubectl create -f test-secret.yml
-    ```
 
-    ```console
-    kubectl get secrets
-    ```
+  ```console
+  kubectl create -f test-secret.yml
+  ```
 
-    ```console
-    kubectl get secret <secret-name> -o yaml 
-    ```
+  ```console
+  kubectl get secrets
+  ```
 
-    ```console
-    kubectl describe secrets
-    ```
+  ```console
+  kubectl get secret <secret-name> -o yaml
+  ```
 
-----
+  ```console
+  kubectl describe secrets
+  ```
+
+---
 
 ## Service Account
 
-----
+---
 
 ```console
-kubectl create serviceaccount test-sa 
+kubectl create serviceaccount test-sa
 ```
 
 ```console
@@ -299,7 +303,7 @@ kubectl get serviceaccount
 ```
 
 ```console
-kubectl describe serviceaccount test-sa 
+kubectl describe serviceaccount test-sa
 ```
 
-----
+---
