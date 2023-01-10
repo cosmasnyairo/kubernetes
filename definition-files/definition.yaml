@@ -1,0 +1,7 @@
+apiVersion: "Version of kubernetes api being used [pod, service (v1)] [replicaset, deployment (apps/v1)]"
+kind: "What's being created [pod, service , replicaset or deployment ]"
+metadata: "data about the object [dictionary]"
+  name: definition
+  labels: "we can have any keyvalue pair here"
+    app: my-definition
+spec:

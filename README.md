@@ -18,6 +18,9 @@ A list of Kubernetes templates and commands
 
 ---
 
+
+- [ ] [Definition file](definition-files/definition.yaml)
+ 
 Cluster is a collection of nodes
 
 Master node has:
