@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  APP_COLOR: RED
+  APP_TYPE: AAB
+  APP_ENV: PROD

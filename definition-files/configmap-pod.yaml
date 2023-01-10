@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-app
+  labels:
+    name: test-app
+spec:
+  containers:
+  - name: test-app
+    image: python-image
+    ports:
+      - containerPort: 3000
+    resources:
+    # Either as env
+    envFrom:
+      - configMapRef:
+          name: app-config
+    # Either as single env 
+    env:
+      - name: app-color
+        valueFrom:
+          configMapKeyRef:
+            name: app-config
+            key: APP_COLOR
+  # Either as volume  
+  volumes:
+    - name: app-config-volume
+      configMap:
+        name: app-config
+     
+

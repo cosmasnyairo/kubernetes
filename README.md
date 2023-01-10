@@ -54,7 +54,7 @@ Single instance of an application (smallest object we can create in k8)
 
 We scale pods up or down
 
-- [ ] [Pod Definition file](definition-files/deployment.yml)
+- [ ] [Pod Definition file](definition-files/deployment.yaml)
 
 ```console
 kubectl get pods -o wide
@@ -116,7 +116,7 @@ Replica set uses selector to determine pods to watch and manage even existing po
 - [ ] [Replicationcontroller Definition file](definition-files/replicationcontroller.yaml)
 
 ```console
-kubectl create -f definition.yml
+kubectl create -f definition.yaml
 ```
 
 ```console
@@ -145,15 +145,15 @@ kubectl describe replicaset <replicaset-name>
 ```
 
 ```console
-kubectl apply -f definition.yml
+kubectl apply -f definition.yaml
 ```
 
 ```console
-kubectl replace -f definition.yml
+kubectl replace -f definition.yaml
 ```
 
 ```console
-kubectl scale -replicas=10 -f definition.yml
+kubectl scale -replicas=10 -f definition.yaml
 ```
 
 ```console
@@ -166,7 +166,7 @@ kubectl scale --replicas=0 replicaset/<replicaset-name>
 
 ---
 
-- [ ] [Deployment Definition file ](definition-files/deployment.yml)
+- [ ] [Deployment Definition file ](definition-files/deployment.yaml)
 
 ```console
 kubectl create deployment nginx --image=nginx
@@ -194,8 +194,8 @@ kubectl create deploy redis-deploy --image=redis --replicas=2 -n dev-ns
 
 ---
 
-- [ ] [Namespace Definition file ](definition-files/namespace.yml)
-- [ ] [Resource Quota Definition file](definition-files/resourcequota.yml)
+- [ ] [Namespace Definition file ](definition-files/namespace.yaml)
+- [ ] [Resource Quota Definition file](definition-files/resourcequota.yaml)
 ```console
 kubectl create ns <namespace-name>
 ```
@@ -232,6 +232,9 @@ kubectl create service <type> <service-name> --tcp=<port>
 
 ---
 
+- [ ] [ConfigMap Definition file ](definition-files/configmap.yaml)
+- [ ] [Pod with configMap Definition file](definition-files/configmap-pod.yaml)
+
 - Imperative
 
   ```console
@@ -250,7 +253,7 @@ kubectl create service <type> <service-name> --tcp=<port>
 - Declarative:
 
   ```console
-  kubectl create -f test-config-map.yml
+  kubectl create -f test-config-map.yaml
   ```
 
   ```console
@@ -264,6 +267,9 @@ kubectl create service <type> <service-name> --tcp=<port>
 ## Secrets
 
 ---
+
+- [ ] [Secret Definition file ](definition-files/secret.yaml)
+- [ ] [Pod with Secret Definition file](definition-files/secret-pod.yaml)
 
 - Imperative
 
@@ -282,7 +288,7 @@ kubectl create service <type> <service-name> --tcp=<port>
 - Declarative
 
   ```console
-  kubectl create -f test-secret.yml
+  kubectl create -f test-secret.yaml
   ```
 
   ```console
