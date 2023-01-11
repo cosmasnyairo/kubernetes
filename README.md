@@ -12,7 +12,10 @@ A list of Kubernetes templates and commands
 - [Services](#services)
 - [Config Map](#config-map)
 - [Secrets](#secrets)
+- [Security Context](#security-context)
 - [Service Account](#service-account)
+- [Resource Limits](#resource-limits)
+
 
 ## Notes
 
