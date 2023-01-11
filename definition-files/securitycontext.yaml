@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test
+  labels:
+    name: test
+spec:
+  # pod level
+  securityContext:
+    runAsUser: test-user
+  containers:
+    - name: test
+      image: ubuntu
+      # container level
+      securityContext:
+        runAsUser: 1010
+        capabilities:
+          drop:
+            - "KILL"
+          add:
+            - "CHOWN"

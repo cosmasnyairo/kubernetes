@@ -308,9 +308,24 @@ kubectl create service <type> <service-name> --tcp=<port>
 
 ---
 
+## Security Context
+
+---
+
+- [ ] [Security Context Definition file ](definition-files/securitycontext.yaml)
+
+We can add security context on the pod level or the container level. If both are specified, the container level takes precedence.
+
+Cabapilites are supported only on the container level
+
+---
+
 ## Service Account
 
 ---
+
+- [ ] [Service Account Definition file ](definition-files/serviceaccount.yaml)
+
 
 ```console
 kubectl create serviceaccount test-sa
@@ -323,5 +338,21 @@ kubectl get serviceaccount
 ```console
 kubectl describe serviceaccount test-sa
 ```
+
+```console
+kubectl create token SERVICEACCOUNTNAME
+```
+
+---
+
+## Resource Limits
+
+---
+
+- [ ] [Resource Limits Definition file ](definition-files/resourcelimit.yaml)
+
+We can set default resource limits in the namespace
+
+- [ ] [Security Context Definition file ](definition-files/limitrange.yaml)
 
 ---
