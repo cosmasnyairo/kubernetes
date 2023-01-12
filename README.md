@@ -15,6 +15,9 @@ A list of Kubernetes templates and commands
 - [Security Context](#security-context)
 - [Service Account](#service-account)
 - [Resource Limits](#resource-limits)
+- [Taints and Tolerations](#taints-and-tolerations)
+- [Node Selectors](#node-selectors)
+- [Node Affinity](#node-affinity)
 
 
 ## Notes
@@ -325,37 +328,57 @@ Cabapilites are supported only on the container level
 
 ## Service Account
 
----
-
-- [ ] [Service Account Definition file ](definition-files/serviceaccount.yaml)
-
-
-```console
-kubectl create serviceaccount test-sa
-```
-
-```console
-kubectl get serviceaccount
-```
-
-```console
-kubectl describe serviceaccount test-sa
-```
-
-```console
-kubectl create token SERVICEACCOUNTNAME
-```
+## Taints and Tolerations
 
 ---
 
-## Resource Limits
+- [ ] [Taints and Tolerations Definition file ](definition-files/taint%26toleration-pod.yaml)
+
+
+<!-- To add the taint -->
+```console
+kubectl taint nodes NODENAME app=red:taint-effect 
+```
+
+<!-- To remove the taint -->
+```console
+kubectl taint nodes NODENAME app=red:taint-effect-
+```
+
+taint-effects include: `NoSchedule|NoExecute|PreferNoSchedule`
 
 ---
 
-- [ ] [Resource Limits Definition file ](definition-files/resourcelimit.yaml)
+## Node Selectors
 
-We can set default resource limits in the namespace
+---
 
-- [ ] [Security Context Definition file ](definition-files/limitrange.yaml)
+- [ ] [Node Selectors Definition file ](definition-files/nodeselector-pod.yaml)
+
+```console
+kubectl label nodes NODENAME type=test
+```
+
+We cannot apply advanced filters e.g not , or
+
+---
+
+## Node Affinity
+
+---
+
+- [ ] [Node Affinity Definition file ](definition-files/nodeaffinity-pod.yaml)
+
+Node affinity types:
+
+- requiredDuringSchedulingIgnoredDuringExecution
+- PreferredDuringSchedulingIgnoredDuringExecution
+- requiredDuringSchedulingrequiredDuringExecution
+
+|  | During Scheduling    | During Execution    |
+| :---:   | :---: | :---: |
+|  1 | Required   | Ignored   |
+|  2 | Preferred   | Ignored   |
+|  3 | Required   | Required   |
 
 ---
