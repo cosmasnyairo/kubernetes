@@ -94,6 +94,14 @@ kubectl get pod <pod-name> -o yaml > pod-definition.yaml
 ```
 
 ```console
+kubectl exec -it podname -- commandtorun
+```
+
+```console
+kubectl replace --force -f app.yaml 
+```
+
+```console
 kubectl apply -f test.yaml
 ```
 
@@ -365,20 +373,18 @@ We cannot apply advanced filters e.g not , or
 
 ## Node Affinity
 
+## Multicontainer Pods
+
 ---
 
-- [ ] [Node Affinity Definition file ](definition-files/nodeaffinity-pod.yaml)
+- [ ] [Multicontainer Pods Definition file ](definition-files/multicontainer.yaml)
 
-Node affinity types:
+Sidecar containers -> help the main container e.g to logging agent to send logs to log server
+Adapter containers -> process data for the main container e.g converts logs to readable format before sending to logging server
+Ambassador containers -> proxy requests from the main container e.g send requests to db on main container's behalf
 
-- requiredDuringSchedulingIgnoredDuringExecution
-- PreferredDuringSchedulingIgnoredDuringExecution
-- requiredDuringSchedulingrequiredDuringExecution
-
-|  | During Scheduling    | During Execution    |
-| :---:   | :---: | :---: |
-|  1 | Required   | Ignored   |
-|  2 | Preferred   | Ignored   |
-|  3 | Required   | Required   |
+- [ ] [Init Containers Definition file ](definition-files/initcontainer.yaml)
+Init containers -> Process inside init container must finish before other containers start. 
+If the init container fails, the pod is restarted until the init container succeeds
 
 ---

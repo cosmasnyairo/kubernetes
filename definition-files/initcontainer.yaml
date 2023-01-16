@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <<pod-name>>
+  labels:
+    app: <<label-value>>
+    type: <<label-value>>
+spec:
+  containers:
+    # multiple containers
+    - name: nginx-container
+      image: nginx
+  initContainers:
+    - name: init-container-1
+      image: nginx
+      command:
+        - "sh",
+        - "start.sh"
