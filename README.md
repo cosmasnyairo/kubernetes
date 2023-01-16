@@ -396,10 +396,15 @@ Node affinity types:
 
 ---
 
-- [ ] [Multicontainer Pods Definition file ](definition-files/multicontainer-pods.yaml)
+- [ ] [Multicontainer Pods Definition file ](definition-files/multicontainer.yaml)
 
-Sidecar containers -> help the main container e.g to logging agent to send logs to log server
-Adapter containers -> process data for the main container e.g converts logs to readable format before sending to logging server
-Ambassador containers -> proxy requests from the main container e.g send requests to db on main container's behalf
-Init containers -> Process inside init container must finish before other containers start. The pod restarts if
+- Sidecar containers -> help the main container e.g to logging agent to send logs to log server
+- Adapter containers -> process data for the main container e.g converts logs to readable format before sending to logging server
+- Ambassador containers -> proxy requests from the main container e.g send requests to db on main container's behalf
+
+- [ ] [Init Containers Definition file ](definition-files/initcontainer.yaml)
+
+- Init containers -> Process inside init container must finish before other containers start. 
+- If the init container fails, the pod is restarted until the init container succeeds
+
 ---
