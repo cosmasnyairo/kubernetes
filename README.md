@@ -18,7 +18,6 @@ A list of Kubernetes templates and commands
 - [Taints and Tolerations](#taints-and-tolerations)
 - [Node Selectors](#node-selectors)
 - [Node Affinity](#node-affinity)
-- [Multicontainer Pods](#multicontainer-pods)
 
 
 ## Notes
@@ -372,21 +371,35 @@ We cannot apply advanced filters e.g not , or
 
 ---
 
+
 ## Node Affinity
+
+---
+
+- [ ] [Node Affinity Definition file ](definition-files/nodeaffinity-pod.yaml)
+
+Node affinity types:
+
+- requiredDuringSchedulingIgnoredDuringExecution
+- PreferredDuringSchedulingIgnoredDuringExecution
+- requiredDuringSchedulingrequiredDuringExecution
+
+|  | During Scheduling    | During Execution    |
+| :---:   | :---: | :---: |
+|  1 | Required   | Ignored   |
+|  2 | Preferred   | Ignored   |
+|  3 | Required   | Required   |
+
+---
 
 ## Multicontainer Pods
 
 ---
 
-- [ ] [Multicontainer Pods Definition file ](definition-files/multicontainer.yaml)
+- [ ] [Multicontainer Pods Definition file ](definition-files/multicontainer-pods.yaml)
 
-- Sidecar containers -> help the main container e.g to logging agent to send logs to log server
-- Adapter containers -> process data for the main container e.g converts logs to readable format before sending to logging server
-- Ambassador containers -> proxy requests from the main container e.g send requests to db on main container's behalf
-
-- [ ] [Init Containers Definition file ](definition-files/initcontainer.yaml)
-
-- Init containers -> Process inside init container must finish before other containers start. 
-- If the init container fails, the pod is restarted until the init container succeeds
-
+Sidecar containers -> help the main container e.g to logging agent to send logs to log server
+Adapter containers -> process data for the main container e.g converts logs to readable format before sending to logging server
+Ambassador containers -> proxy requests from the main container e.g send requests to db on main container's behalf
+Init containers -> Process inside init container must finish before other containers start. The pod restarts if
 ---
