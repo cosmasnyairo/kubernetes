@@ -19,6 +19,7 @@ A list of Kubernetes templates and commands
 - [Node Selectors](#node-selectors)
 - [Node Affinity](#node-affinity)
 - [Multicontainer Pods](#multicontainer-pods)
+- [Observability](#observability)
 
 ## Notes
 
@@ -408,3 +409,54 @@ Node affinity types:
 - If the init container fails, the pod is restarted until the init container succeeds
 
 ---
+
+## Observability
+
+---
+
+Readiness Probe:
+- Perform test to check if the container is up before marking the container as ready.
+- For readiness, we can do http calls, tcp calls or run a command that when succesfull, we mark the container as ready
+
+Liveness Probe:
+- Periodically test if application within container is healthy.
+- For liveness, we can do http calls, tcp calls or run a command that when they fail, we mark the container as unhealthy and it's restarted
+
+- [ ] [Readiness & Liveness Probe Definition file ](definition-files/readiness-probe.yaml)
+
+Logging:
+
+Show logs 
+
+```console
+kubectl logs podname 
+```
+
+Show live logs 
+
+```console
+kubectl logs -f podname 
+```
+
+For multi container we specify container name 
+
+```console
+kubectl logs -f podname container-name
+```
+
+
+Metric Server: 
+- We can have 1 metric server per cluster
+- Receives metrics from nodes and pods and stores them in memory ( we can't see historical data with metric server)
+- To install on cluster,we clone the metric server repo and run kubectl create -f repourl
+
+```console
+kubectl top node
+```
+
+```console
+kubectl top pod
+```
+
+---
+
