@@ -20,6 +20,7 @@ A list of Kubernetes templates and commands
 - [Node Affinity](#node-affinity)
 - [Multicontainer Pods](#multicontainer-pods)
 - [Observability](#observability)
+- [Jobs and Cronjobs](#jobs-and-cronjobs)
 
 ## Notes
 
@@ -83,6 +84,10 @@ kubectl get pods,svc
 ```
 
 ```console
+kubectl get pods --no-headers | wc -l
+```
+
+```console
 kubectl run <pod-name> --image=<image-name>  -n <namespace> --dry-run=client -o yaml > test.yaml
 ```
 
@@ -117,6 +122,22 @@ kubectl explain pods --recursive | less
 ```console
 kubectl explain pods --recursive | grep envFrom -A<number-of-lines>
 ```
+
+- [ ] [Pod Design Definition file ](definition-files/labels-selectors-annotations.yaml)
+
+- Pod labels - used to group objects i.e pods, services, replicasets
+
+```console
+kubectl get pods --selector label=value
+```
+
+```console
+kubectl get pods --selector label=value,label2=value2
+```
+
+- Selectors match labels described i.e match labels on the pod or service to match labels of a pod
+
+- Annotation records details for informatory purposes e.g  build information, tool used.
 
 ---
 
@@ -199,12 +220,53 @@ kubectl get deploy
 ```
 
 ```console
+kubectl get deploy -o wide
+```
+
+```console
 kubectl delete deployment <deployment -name>
 ```
 
 ```console
 kubectl create deploy redis-deploy --image=redis --replicas=2 -n dev-ns
 ```
+
+- Deployment strategies: 
+  - Recreate - Remove all applications running on older verision and bring up applications running on newer verision
+  - Rolling update (default strategy) - Remove a single application and bring up a new one one by one until the newer version is running on all applications
+  - A new replica set is created under the hood when we do deployment upgrades
+  - We use record flag to save commands used to create/update deployments
+  - We use the to revision flag to rollback to a specific revision 
+
+```console
+kubectl set image deploy/deploymentname <container-name>=<image>
+```
+
+```console
+kubectl set image deploy/deploymentname <container-name>=<image> --record
+```
+
+```console
+kubectl rollout restart deploy/deploymentname
+```
+
+```console
+kubectl rollout status deploy/deploymentname
+```
+
+```console
+kubectl rollout history deploy/deploymentname
+```
+
+```console
+kubectl rollout undo deploy/deploymentname
+```
+
+```console
+kubectl rollout undo deploy/deploymentname --to-revision=1
+```
+
+
 
 ---
 
@@ -337,6 +399,27 @@ Cabapilites are supported only on the container level
 
 ## Service Account
 
+---
+
+- [ ] [Service Account Definition file ](definition-files/serviceaccount.yaml)
+
+
+```console
+kubectl create serviceaccount test-sa
+```
+
+```console
+kubectl get serviceaccount
+```
+
+```console
+kubectl describe serviceaccount test-sa
+```
+
+```console
+kubectl create token SERVICEACCOUNTNAME
+```
+
 ## Taints and Tolerations
 
 ---
@@ -460,3 +543,22 @@ kubectl top pod
 
 ---
 
+## Jobs and Cronjobs
+
+Job - Tasks that can be run and exit after they've finalized
+- [ ] [Job Definition file ](definition-files/job.yaml)
+
+---
+
+```console
+kubectl get jobs
+```
+
+Cronjob - To run jobs periodically
+- [ ] [Cronjob Definition file ](definition-files/cronjob.yaml)
+
+```console
+kubectl get cronjob
+```
+
+---

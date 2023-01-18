@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: math-job
+spec:
+  ttlSecondsAfterFinished: 100 # seconds after which job is deleted
+  completions: 3 # number of successful pods to run the job
+  parallelism: 3
+  backoffLimit: 10 # retries before marking job as failed
+  template:
+    spec:
+      containers:
+      - name: math
+        image: ubuntu
+        command: ["expr",  "6", "-", "9"]
+      restartPolicy: Never

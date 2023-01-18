@@ -1,18 +1,13 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: ReplicaSet
 metadata:
-  name: myapp-deployment
+  name: myapp-replicaset
   labels:
     app: myapp
-    type: demo-deploy
+    type: demo-rs
+  annotations:
+    buildversion: 1.2  
 spec:
-  # strategy:
-  #   type: Recreate
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 25%
   template:
     metadata:
       name: <<pod-name>>
@@ -21,11 +16,8 @@ spec:
         type: <<label-value>>
     spec:
       containers:
-        # multiple containers
         - name: nginx-container
           image: nginx
-        - name: database-container
-          image: mysql
   replicas: 2
   selector:
     matchLabels:
