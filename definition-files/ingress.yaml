@@ -1,0 +1,43 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-name
+spec:
+  backend:
+    service:
+      name: test-service
+      port:
+        number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myingress
+  labels:
+    name: myingress
+spec:
+  rules:
+  - host: mydomain-name1.com
+    http:
+      paths:
+      - path: "/test1"
+        backend:
+          service:
+            name: test-service
+            port:
+              number: 80
+      - path: "/test2"
+        backend:
+          service:
+            name: test-service2
+            port:
+              number: 8000
+  - host: mydomain-name2.com
+    http:
+      paths:
+      - path: "/teach"
+        backend:
+          service:
+            name: teach-service
+            port:
+              number: 80

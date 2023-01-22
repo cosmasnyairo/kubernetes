@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: network-policy-name
+spec:
+  podSelector:
+    matchLabels:
+      test: testing
+  policyTypes:
+    - Ingress
+    - Egress  
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              name: pod-name
+          namespaceSelector:
+            matchLabels:
+              name: testing
+        - ipBlock:
+            cidr: ip-cidr
+        ports:
+          - protocol: "tcp"
+            port: 3306
+  egress:
+      - to:
+          - podSelector:
+              matchLabels:
+                name: pod-name
+          - namespaceSelector:
+              matchLabels:
+                name: testing
+          ports:
+            - protocol: "tcp"
+              port: 80

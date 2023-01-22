@@ -21,6 +21,8 @@ A list of Kubernetes templates and commands
 - [Multicontainer Pods](#multicontainer-pods)
 - [Observability](#observability)
 - [Jobs and Cronjobs](#jobs-and-cronjobs)
+- [Ingress](#ingress)
+- [Network Policies](#network-policies)
 
 ## Notes
 
@@ -290,6 +292,23 @@ kubectl config set-context $(kubectl config current-context) -n <namespace-name>
 
 ---
 
+Enable communication between components within the application
+
+Types:
+- Node Port 
+  - [ ] [Node Port Definition file ](definition-files/nodeport-service.yaml)
+  - Map a port on node to a port on the pod 
+  - The node's port Can only be in the range 30000 to 32767
+  - Node port -> Service -> Target port (Pod's port)
+  - Node port and service port are not mandatory, if not provided, node port is allocated an available ip in the range 30000 to 32767 while service port is assumed to be same as port
+  - Acts as loadbalancer if we have multiple pods with the same label, it uses a random algorithm to select which pod to send requests to.
+- Cluster Ip 
+  - [ ] [Cluster Ip Definition file ](definition-files/clusterip-service.yaml)
+  - Service assigned an ip in the cluster and it's used to access the service by other pods in the service.
+
+- Load Balancer
+  - Builds on top of node port and allows balancing of requests to the service to it's target applications
+   
 To connect to another service in a different namespace: we use the following syntax:
 
 ```
@@ -299,11 +318,11 @@ test-service.test-ns.svc.cluster.local
 ```
 
 ```console
-kubectl expose pod <pod-name> --type=<type> --port=<port> --name=<service-name>
+kubectl expose resource <resource-name> --type=<type> --port=<port> --target-port=<target-port> --name=<service-name>
 ```
 
 ```console
-kubectl create service <type> <service-name> --tcp=<port>
+kubectl create service <type> <service-name> --tcp=<port>:<port>
 ```
 
 ---
@@ -562,3 +581,34 @@ kubectl get cronjob
 ```
 
 ---
+
+
+## Ingress
+
+- [ ] [Job Definition file ](definition-files/ingress.yaml)
+
+- Enables users access application through an externally accessible url that we can configure to route to different services in the cluster based on url path while implementing ssl as well
+- We need to expose it so it can be accessible outside the cluster
+- Ingress controller:
+  - Does not come with kubernetes as default. We need to deploy if first.
+  - Examples are istio, nginx, haproxy
+
+- Ingress resources:
+  - Rules and configs applied to ingress controller to forward traffic to single applications, via paths or via domain name
+
+```console
+kubectl get ingress
+```
+
+```console
+kubectl create ingress <ingress-name> --rule="host/path=service-name:port"
+```
+
+## Network Policies
+
+- Allow and deny rules configured on the pod
+- [ ] [Network Policies file ](definition-files/network-policy.yaml)
+
+```console 
+kubectl get netpol
+```
