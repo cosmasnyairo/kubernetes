@@ -23,7 +23,7 @@ A list of Kubernetes templates and commands
 - [Jobs and Cronjobs](#jobs-and-cronjobs)
 - [Ingress](#ingress)
 - [Network Policies](#network-policies)
-
+- [Storage](#storage)
 ## Notes
 
 ---
@@ -585,7 +585,7 @@ kubectl get cronjob
 
 ## Ingress
 
-- [ ] [Job Definition file ](definition-files/ingress.yaml)
+- [ ] [Ingress Definition file ](definition-files/ingress.yaml)
 
 - Enables users access application through an externally accessible url that we can configure to route to different services in the cluster based on url path while implementing ssl as well
 - We need to expose it so it can be accessible outside the cluster
@@ -607,8 +607,41 @@ kubectl create ingress <ingress-name> --rule="host/path=service-name:port"
 ## Network Policies
 
 - Allow and deny rules configured on the pod
-- [ ] [Network Policies file ](definition-files/network-policy.yaml)
+- [ ] [Network Policies Definition file ](definition-files/network-policy.yaml)
 
 ```console 
 kubectl get netpol
 ```
+
+## Storage
+
+- Volumes
+
+  - [ ] [Volume Definition file ](definition-files/volume.yaml)
+
+- Persistent Volumes
+
+  - Cluster wide pool of storage volumes to be used by applications on the cluster
+  - Applications can then request storage from the pool to use
+
+  - [ ] [Persistent Volumes Definition file ](definition-files/persistent-volume.yaml)
+  - [ ] [Persistent Volume in a Pod Definition file ](definition-files/persistent-volume-pod.yaml)
+
+- Persistent Volume Claim
+
+  - Users create persistent volume claims to use the storage in the persistent volume
+  - Kubernetes binds pvc to pv based on request and properties on the volume
+
+  - [ ] [Persistent Volume Claim Definition file ](definition-files/persitent-volume-claim.yaml)
+
+  ```console
+  kubeclt delete pvc <pvc-claim> 
+  ```
+
+- Storage Class
+
+  - We define a provisioner to automatically provision storaage which can be used by pods.
+  -  If we specify the storage class, we don't need to specify the persistent volume as it would be created automatically when storage class is created.
+
+  - [ ] [Storage Class Definition file ](definition-files/storageclass.yaml)
+  - [ ] [Persistent Volume Claim Storage Class Definition file ](definition-files/persistent-volume-claim-storageclass.yaml)

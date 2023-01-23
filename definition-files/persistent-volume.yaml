@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: persistent-vol
+spec:
+  capacity:
+    storage: 
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /pv/log
+    type: Directory
+  awsElasticBlockStore:
+    volumeID: <<vol-id>>
+    fsType: "ntfs"
