@@ -24,6 +24,9 @@ A list of Kubernetes templates and commands
 - [Ingress](#ingress)
 - [Network Policies](#network-policies)
 - [Storage](#storage)
+- [Authentication](#authentication)
+- [Authorization](#authorization)
+
 ## Notes
 
 ---
@@ -57,6 +60,14 @@ kube system - resources for internal purposes for kubernetes
 kube public - resources to be made available to all users
 ```
 
+kubeapiserver path is `/etc/kubernetes/manifests/kube-apiserver.yaml`
+To check settings passed to kubeapi server: `ps -aux | grep authorization`
+
+To view api resources and their shortnames:
+
+``` 
+kubectl api-resources
+```
 ---
 
 ## Pod
@@ -645,3 +656,116 @@ kubectl get netpol
 
   - [ ] [Storage Class Definition file ](definition-files/storageclass.yaml)
   - [ ] [Persistent Volume Claim Storage Class Definition file ](definition-files/persistent-volume-claim-storageclass.yaml)
+
+## Authentication
+
+All user access is managed by the api server
+
+We can store user credentials as:
+
+- Static Password File:
+  
+  ```console
+    # Add this to kubeapi server service or pod definition file
+    --basic-auth-file=user-credentials.csv
+  ```
+  
+  ```console
+    curl -v -k <api-url> -u "user:password"
+  ```
+
+- Static Token File:
+
+   ```console
+    # Add this to kubeapi server service or pod definition file
+    --token-auth-file=user-credentials.csv
+  ```
+  
+  ```console
+    curl -v -k <api-url> --header "Authorization: Bearer <TOKEN>"
+  ```
+
+We can use kubeconfig to manage which clusters we can access
+
+- [ ] [Kubeconfig Definition file ](definition-files/kubeconfig.yaml)
+
+```console
+kubectl config view --kubeconfig=my-custom-file
+```
+
+```console
+kubectl config use-context developer-development-playground
+```
+
+```
+kubectl config get-context developer-development-playground
+```
+
+## Authorization
+
+Authorization modes:
+  - Node authorizer -> handles node requests (user should have name prefixed system node)
+  - Attribute based authotization -> Assosiate users/group of users with a set of permissions(difficult to manage)
+  - Role bases access control -> We define roles and associate users with specific roles
+  - Webhook -> Outsource authorization to 3rd party tools
+  - AlwaysAllow -> Allows all requests without doing authorization checks (default)
+  - AlwaysDeny -> Denys all requests
+
+On kubeapiserver, we specify modes to use `--authorization-mode=Node,RBAC,Webhook`
+
+
+Role based access control:
+- [ ] [Role Definition file ](definition-files/role.yaml)
+- [ ] [Role Binding Definition file ](definition-files/role-binding.yaml)
+
+```console
+kubectl get roles
+```
+
+```console
+kubectl create role test --verb=list,create --resource=pods
+```
+
+```console
+kubectl describe role <role-name>
+```
+
+```console
+kubectl get rolebindings
+```
+
+```console
+kubectl create rolebinding test-rb --role=test --user=user1 --group=group1
+```
+
+```console
+kubectl describe rolebindings <rolebindings-name>
+```
+
+``` console
+kubectl auth can-i create deploy
+```
+
+``` console
+kubectl auth can-i create deploy --as dev-user --namespace dev
+```
+
+```console
+kubectl api-resources --namespaced=false
+```
+
+We can create roles scoped on clusters. We can also create cluster roles on namespace scoped resources
+
+Cluster Role based access control:
+
+- [ ] [Cluster Role Definition file ](definition-files/role.yaml)
+- [ ] [Cluster Role Binding Definition file ](definition-files/role-binding.yaml)
+
+```console
+kubectl create clusterrole test --verb=* --resource=*
+```
+
+```console
+kubectl create clusterrolebinding test-rb --clusterrole=test --user=user --group=group
+```
+
