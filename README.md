@@ -630,6 +630,10 @@ kubectl get ingress
 kubectl create ingress <ingress-name> --rule="host/path=service-name:port"
 ```
 
+```
+kubectl create ingress world --rule=world.universe.mine/europe*=europe:80 --rule=world.universe.mine/asia*=asia:80  --class=nginx -n world
+```
+
 ## Network Policies
 
 - Allow and deny rules configured on the pod
