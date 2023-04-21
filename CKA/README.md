@@ -4,6 +4,10 @@ A list of Kubernetes templates and commands i use
 
 ## Table of Contents
 - [Notes](#notes)
+- [Scheduling](#scheduling)
+  - [Manual Scheduling](#manual-scheduling)
+  - [Labels](#labels-and-selectors)
+  - [Taints and Tolerations](#taints-and-tolerations)
 
 ## Notes
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
@@ -29,4 +33,35 @@ If we install the clustrer without using kubeadmin, we can view:
   - the kubecontroller manager service located at `/etc/systemd/system/kube-controller-manager.service` or `ps -aux | grep kube-controller-manager` on the master node.
   - explore the kube-scheduler service or `ps -aux | grep kube-scheduler`
   - explore the kubelet service or `ps -aux | grep kubelet`
+```
+
+## Scheduling
+
+### Manual scheduling
+- Add the `nodeName` field when creating a pod only during creation time
+- We can alternatively create a [pod-binding-file](definition-files/pod-binding.yaml) and send a post request to the pod's binding api with data section set to the binding object in a json format as follows: `curl --header "Content-Type:application/json" --request POST --data <<BINDING-OBJECT-YAML>> http://$SERVER/api/v1/namespaces/<namespace>/pods/$PODNAME/binding/`
+
+### Labels and Selectors
+
+- Annotations record other details in pod for informatory purposes
+
+```sh
+  kubectl get po --selector type=test
+```
+
+
+### Taints and Tolerations
+- Restrict what pods can be scheduled on a node
+- Taints set on nodes, tolerations set on pods
+- Taint effect = what happens to pods that can't tolerate the taint
+  - NoSchedule
+  - PreferNoSchedule 
+  - NoExecute
+   
+```sh
+  kubectl taint nodes my-node type=test:NoSchedule
+```
+
+```sh
+  kubectl taint node my-node node-role=kubernetes.io/control-plane:NoSchedule-
 ```
