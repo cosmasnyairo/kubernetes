@@ -8,6 +8,14 @@ A list of Kubernetes templates and commands i use
   - [Manual Scheduling](#manual-scheduling)
   - [Labels](#labels-and-selectors)
   - [Taints and Tolerations](#taints-and-tolerations)
+  - [Node Selector](#node-selector)
+  - [Node affinity](#node-affinity)
+  - [Resource Limits](#resource-limits)
+  - [Daemon Sets](#daemon-sets)
+  - [Static Pods](#static-pods)
+  - [Multiple Schedulers](#multiple-schedulers)
+  - [Scheduler Profiles](#scheduler-profiles) 
+
 
 ## Notes
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
@@ -34,6 +42,9 @@ If we install the clustrer without using kubeadmin, we can view:
   - explore the kube-scheduler service or `ps -aux | grep kube-scheduler`
   - explore the kubelet service or `ps -aux | grep kubelet`
 ```
+
+- Kubelet config is at: `/var/lib/kubelet/config.yaml` for each node
+
 
 ## Scheduling
 
@@ -64,4 +75,113 @@ If we install the clustrer without using kubeadmin, we can view:
 
 ```sh
   kubectl taint node my-node node-role=kubernetes.io/control-plane:NoSchedule-
+```
+
+### Node Selector 
+- Add node selector section in the pod with the label of the node we want to use as per this example: [nodeselector](definition-files/nodeselector.yaml)
+   
+```sh
+  kubectl label nodes my-node type=test
+```
+
+### Node affinity
+
+Node affinity example here: [nodeaffinity](definition-files/nodeaffinity-pod.yaml)
+
+Node affinity types:
+
+- requiredDuringSchedulingIgnoredDuringExecution
+- PreferredDuringSchedulingIgnoredDuringExecution
+- requiredDuringSchedulingrequiredDuringExecution
+
+|     | During Scheduling | During Execution |
+| :-: | :---------------: | :--------------: |
+|  1  |     Required      |     Ignored      |
+|  2  |     Preferred     |     Ignored      |
+|  3  |     Required      |     Required     |
+
+We can combine node affinity with taints and tolerations
+
+### Resource Limits
+
+We can create limit ranges which need to be followed by pods in a namespace as in the following example: [limitrange](definition-files/limitrange.yaml)
+
+### Daemon Sets
+Ensures a copy of a pod is always on each node in the cluster. Use case: Logging, monitoring agents. Definition file: [daemonset](definition-files/daemonset.yaml)
+
+### Static Pods
+Pods created independently by the kubelet without help from the kubeapiserver.
+We can do this in the following ways:
+  - Configure the pod definition path in the kubelet service at with the following entry: `--pod-manifest-path=etc/kubernetes/manifests` 
+  - Provide a `--config=mydefinition.yaml` entry in the kubelet service and have the `mydefinition.yaml` file contain the following:  
+  ```yaml
+    staticPodPath: etc/kubernetes/manifests
+  ```
+  - For both approaches we then place the pod definition files at the specified directory in our case it's `/etc/kubernetes/manifests` and view pods created via the `docker ps` command
+
+We can use static pods to deploy control plane components as static pods.
+
+### Multiple Schedulers
+
+We can create our custom scheduler in kubernetes then pass the file to the custom scheduler in this format:
+` --config=/etc/kubenetes/my-scheduler/my-scheduler-conf.yaml`. 
+
+The `my-scheduler-conf.yaml` file contains the following:
+
+```yaml
+apiVersion: kubescheduler.config.k8s.io/v1beta2
+kind: KubeSchedulerConfiguration
+profiles:
+  - schedulerName: my-scheduler
+leaderElection:
+  leaderElect: true
+  resourceNamespace: kube-system
+  resourceName: lock-object-my-scheduler
+```
+
+The leaderelection section is used when we have multiple master nodes with the custom scheduler running on them in a HA(High Availability) setup and we need to chose the active copy of the scheduler to be running at a time.
+
+Read more at: [Multiple Schedulers](https://kubernetes.io/docs/tasks/extend-kubernetes/configure-multiple-schedulers/)
+
+For pods to use our custom scheduler, we provide the scheduler name field in the pod definition.
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: myapp
+  labels:
+    name: myapp
+spec:
+  containers:
+  - name: myapp
+    image: busybox
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    ports:
+      - containerPort: 2000
+  schedulerName: my-custom-scheduler
+```
+
+### Scheduler Profiles
+We can disable existing scheduler plugins as well as enable our own custom plugins as below
+
+```yaml
+apiVersion: kubescheduler.config.k8s.io/v1beta2
+kind: KubeSchedulerConfiguration
+profiles:
+  - schedulerName: my-scheduler
+    plugins:
+      filter:
+        disabled:
+          - name: TaintToleration
+        enabled:
+          - name: MyCustomPlugin
+  - schedulerName: my-scheduler-two
+    plugins:
+      score:
+        disabled:
+          - name: 'NodeAffinity'
+          - name: 'ImageLocality'  
 ```

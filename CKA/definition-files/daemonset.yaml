@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: mydaemonset
+spec:
+  selector:
+    matchLabels:
+      app: mydaemonset-app
+  template:
+    metadata:
+      labels:
+        app: mydaemonset-app
+    spec:
+      containers:
+      - name: myapp
+        image: logviewer
