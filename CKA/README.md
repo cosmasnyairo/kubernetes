@@ -50,7 +50,18 @@ If we install the clustrer without using kubeadmin, we can view:
 
 ### Manual scheduling
 - Add the `nodeName` field when creating a pod only during creation time
-- We can alternatively create a [pod-binding-file](definition-files/pod-binding.yaml) and send a post request to the pod's binding api with data section set to the binding object in a json format as follows: `curl --header "Content-Type:application/json" --request POST --data <<BINDING-OBJECT-YAML>> http://$SERVER/api/v1/namespaces/<namespace>/pods/$PODNAME/binding/`
+- We can alternatively create a pod binding file as shown below:
+```yaml
+apiVersion: v1
+kind: Binding
+metadata:
+  name: myapp
+target:
+  apiVersion: v1
+  kind: Node 
+  name: my-node
+```
+- Then, we send a post request to the pod's binding api with data section set to the binding object in a json format as follows: `curl --header "Content-Type:application/json" --request POST --data <<BINDING-OBJECT-YAML>> http://$SERVER/api/v1/namespaces/<namespace>/pods/$PODNAME/binding/`
 
 ### Labels and Selectors
 
@@ -60,14 +71,31 @@ If we install the clustrer without using kubeadmin, we can view:
   kubectl get po --selector type=test
 ```
 
-
 ### Taints and Tolerations
+
 - Restrict what pods can be scheduled on a node
 - Taints set on nodes, tolerations set on pods
 - Taint effect = what happens to pods that can't tolerate the taint
   - NoSchedule
   - PreferNoSchedule 
   - NoExecute
+
+Taint and toleration example yaml shown below:
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <<pod-name>>
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx
+  tolerations:
+    - key: "type"
+      value: "test"
+      operator: "Equal"
+      effect: "NoSchedule"
+```
    
 ```sh
   kubectl taint nodes my-node type=test:NoSchedule
@@ -78,7 +106,26 @@ If we install the clustrer without using kubeadmin, we can view:
 ```
 
 ### Node Selector 
-- Add node selector section in the pod with the label of the node we want to use as per this example: [nodeselector](definition-files/nodeselector.yaml)
+- Add node selector section in the pod with the label of the node we want to use as shown below:
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    name: myapp
+spec:
+  containers:
+  - name: myapp
+    image: busybox
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    ports:
+      - containerPort: 80
+  nodeSelector:
+    type: large
+```
    
 ```sh
   kubectl label nodes my-node type=test
@@ -86,7 +133,32 @@ If we install the clustrer without using kubeadmin, we can view:
 
 ### Node affinity
 
-Node affinity example here: [nodeaffinity](definition-files/nodeaffinity-pod.yaml)
+Node affinity example below:
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <<pod-name>>
+  labels:
+    app: <<label-value>>
+    type: <<label-value>>
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: type
+                operator: Exists
+          # - matchExpressions:
+          #     - key: type
+          #       operator: In
+          #       values:
+          #         - test
+```
 
 Node affinity types:
 
@@ -104,10 +176,55 @@ We can combine node affinity with taints and tolerations
 
 ### Resource Limits
 
-We can create limit ranges which need to be followed by pods in a namespace as in the following example: [limitrange](definition-files/limitrange.yaml)
+We can create limit ranges which need to be followed by pods in a namespace as shown below:
+```yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: cpu-limit-range
+spec:
+  limits:
+    - default:
+        cpu: 1
+      defaultRequest:
+        cpu: 0.5
+      type: Container
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: mem-limit-range
+spec:
+  limits:
+    - default:
+        memory: 512Mi
+      defaultRequest:
+        memory: 256Mi
+      type: Container
+---
+```
 
 ### Daemon Sets
-Ensures a copy of a pod is always on each node in the cluster. Use case: Logging, monitoring agents. Definition file: [daemonset](definition-files/daemonset.yaml)
+Ensures a copy of a pod is always on each node in the cluster. Use case: Logging, monitoring agents as shown below:
+
+```yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: mydaemonset
+spec:
+  selector:
+    matchLabels:
+      app: mydaemonset-app
+  template:
+    metadata:
+      labels:
+        app: mydaemonset-app
+    spec:
+      containers:
+      - name: myapp
+        image: logviewer
+```
 
 ### Static Pods
 Pods created independently by the kubelet without help from the kubeapiserver.
