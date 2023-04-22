@@ -15,7 +15,7 @@ A list of Kubernetes templates and commands i use
   - [Static Pods](#static-pods)
   - [Multiple Schedulers](#multiple-schedulers)
   - [Scheduler Profiles](#scheduler-profiles) 
-
+- [Logging and Monitoring](#monitoring-and-logging)
 
 ## Notes
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
@@ -301,4 +301,28 @@ profiles:
         disabled:
           - name: 'NodeAffinity'
           - name: 'ImageLocality'  
+```
+
+## Monitoring and Logging
+
+We can use the metric server from: [metrics-server](https://github.com/kubernetes-sigs/metrics-server) to collect metrics about our cluster performance. We can also used advanced tools for out monitoring i.e prometheus using this [guide](https://devopscube.com/setup-prometheus-monitoring-on-kubernetes/#:~:text=Prometheus%20is%20a%20high%2Dscalable,helps%20with%20metrics%20and%20alerts.)
+
+We can then view performance using
+```sh
+kubectl top node
+```
+
+```sh
+kubectl top pods
+```
+
+To get streamed logs of a currently running pod we use 
+
+```sh
+kubectl logs pod-name -f
+```
+
+To get streamed logs of a currently running pod with multiple containers we use 
+```sh
+kubectl logs pod-name -c container-name -f
 ```
