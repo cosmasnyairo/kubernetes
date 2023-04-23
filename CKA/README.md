@@ -45,6 +45,14 @@ If we install the clustrer without using kubeadmin, we can view:
 
 - Kubelet config is at: `/var/lib/kubelet/config.yaml` for each node
 
+- To pass commands to pods on creation:
+```sh
+kubectl run webapp-green --image=test --command -- --color=green
+```
+- To pass args to pods on creation:
+ ```sh
+ kubectl run webapp-green --image=test -- --color=green
+ ```
 
 ## Scheduling
 
