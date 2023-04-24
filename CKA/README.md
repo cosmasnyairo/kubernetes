@@ -16,7 +16,7 @@ A list of Kubernetes templates and commands i use
   - [Multiple Schedulers](#multiple-schedulers)
   - [Scheduler Profiles](#scheduler-profiles) 
 - [Logging and Monitoring](#monitoring-and-logging)
-
+- [OS Upgrades](#os-upgrades)
 ## Notes
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
 - kube-api sever - management component in kubernetes. Only component to interact with the etcd data store
@@ -333,4 +333,73 @@ kubectl logs pod-name -f
 To get streamed logs of a currently running pod with multiple containers we use 
 ```sh
 kubectl logs pod-name -c container-name -f
+```
+
+## Os Upgrades
+- We can drain a node to remove the pods currently running on it and then the node is cordoned (marked as unschedulable)
+```sh
+kubectl drain node1
+```
+- We can also manually cordon a node
+```sh
+kubectl cordon node1
+```
+- After our upgrade/fixes to the node, we then uncordon the node once it's back up
+```sh
+kubectl uncordon node1
+```
+- We can have the different components with different versions but not a higher version than the kube api-server but kubectl can be one version higher or lower or the same version
+
+| Component   | Maximum version
+| :---------:  | :---------: |
+| Kube Api Server | x | 
+| Controller Manager | x-1 | 
+| Kube Scheduler | x-1 | 
+| Kubectl | x-1 or x or x+1|
+| Kubelet | x-2 | 
+| Kube-Proxy | x-2| 
+
+- To upgrade a cluster managed by kubeadm, 
+  - we first start with the master node then the worker nodes.
+  - We first get the upgrade plan for our version, 
+
+Step 1 (master node):
+
+```sh
+kubeadm upgrade plan
+```
+```sh
+apt-get upgrade kubeadm=<version> -y
+```
+```sh
+kubeadm version
+```
+```sh
+kubeadm upgrade apply <version>
+```
+
+If we have kubelets on the master node: 
+```sh
+apt-get upgrade kubelet=<version> -y
+```
+```sh
+systemctl restart kubelet
+```
+
+Step 1 (worker node-> one by one):
+
+```sh
+kubeadm drain node01 # on master node
+```
+```sh
+apt-get upgrade kubeadm=<version> -y
+```
+```sh
+apt-get upgrade kubelet=<version> -y
+```
+```sh
+systemctl restart kubelet   
+```
+```sh
+kubectl uncordon node01  # on master node
 ```
