@@ -40,7 +40,7 @@ If we install the clustrer without using kubeadmin, we can view:
   - the apiserver service located at `/etc/systemd/system/kube-apiserver.service` or `ps -aux | grep kube-apiserver` on the master node.
   - the kubecontroller manager service located at `/etc/systemd/system/kube-controller-manager.service` or `ps -aux | grep kube-controller-manager` on the master node.
   - explore the kube-scheduler service or `ps -aux | grep kube-scheduler`
-  - explore the kubelet service or `ps -aux | grep kubelet`
+  - explore the kubelet service or `ps -aux | grep kubelet` 
 ```
 
 - Kubelet config is at: `/var/lib/kubelet/config.yaml` for each node
@@ -386,7 +386,7 @@ apt-get upgrade kubelet=<version> -y
 systemctl restart kubelet
 ```
 
-Step 1 (worker node-> one by one):
+Step 2 (worker node-> one by one):
 
 ```sh
 kubeadm drain node01 # on master node
@@ -403,3 +403,47 @@ systemctl restart kubelet
 ```sh
 kubectl uncordon node01  # on master node
 ```
+
+Backup candidates : Resource configurations, etcd
+
+- For resource configurations:
+  ```sh
+  kubectl get all --all-namespaces -o yaml > deploy-and-service.yaml
+  ```
+- For Etcd, 
+  We can either backup the directory where etcd stores to or take a snapshot and restore it 
+
+  ```sh
+  export ETCDCTL_API=3 
+  ```
+  ```sh
+  etcdctl snapshot save --endpoints=<enpoints> \
+                        --cacert=<path-to-cacert> \
+                        --cert=<path-to-cert> \
+                        --key=<path-to-key>
+                        /path/to/backup/file/mysnapshot.db
+  ```
+  ```sh
+  etcdctl snapshot status /path/to/backup/file/mysnapshot.db
+  ```
+  ```sh
+  service kube-api-server stop
+  ```
+  ```sh
+  etcdctl snapshot restore /path/to/backup/file/mysnapshot.db --data-dir /path/to/restore/to/
+  # We then update etcd configuration to use the new directory 
+  ```
+  ```sh
+  service etcd restart
+  service kube-api-server start
+  ```
+
+We can use scp to copy objects to a pod:
+```sh
+scp test.txt my-server:/home
+```
+```sh
+scp my-server:/home test.txt 
+```
+
+More info: [Disaster Recovery for Kubernetes Clusters](https://www.youtube.com/watch?v=qRPNuT080Hk&ab_channel=CNCF%5BCloudNativeComputingFoundation%5D)
