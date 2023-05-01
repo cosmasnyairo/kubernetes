@@ -18,8 +18,10 @@ A list of Kubernetes templates and commands i use
 - [Logging and Monitoring](#monitoring-and-logging)
 - [OS Upgrades](#os-upgrades)
 - [Security](#security)
-  - [Authorization and Authentication](#authorization-and-authentication)
-
+  - [Authentication](#authentication)
+  - [TLS Certificates](#tls-certificates) 
+  - [Kubeconfig](#kubeconfig)
+  - [Authorization](#authorization)
 ## Notes
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
 - kube-api sever - management component in kubernetes. Only component to interact with the etcd data store
@@ -453,7 +455,7 @@ More info: [Disaster Recovery for Kubernetes Clusters](https://www.youtube.com/w
 
 ## Security
 
-### Authorization and Authentication
+### Authentication
 Authentication to the kube-api server is through:
 - Password file:
   - Specify in kubeapiserver service or kubeapi server yaml file `--basic-auth-file=usercreds-basic.csv`
@@ -472,4 +474,223 @@ Authentication to the kube-api server is through:
 - Certificates
 - External Identity Service
 
+### TLS Certificates
 
+> Cerificates with public key usually end with `.crt` or `.pem` while those with private keys usually end with `.key` or `-key.pem`
+
+List of certificates in the cluster
+- Certificate Authority certs (we can use more than one ca)
+- Server certificates:
+  - kube-api-server 
+  - etcd server
+  - kubelet server
+- Client certificates:
+  - users (admins)
+  - kube-scheduler
+  - kube-controller-manager
+  - kube-proxy
+  - kube-api-server to kubelet
+  - kube-api-server to etcd
+
+All certificate operations done by the kube controller manager. We specify the following:
+  ```sh
+    - --cluster-signing-cert-file='pathtofile'
+    - --cluster-signing-key-file='pathtofile' 
+  ```
+
+Certificate signing requests using the following file:
+
+```
+cat file.csr | base64 -w 0
+```
+
+```yaml
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: johndoe
+spec:
+  request: BASE64 ENCODED CSR
+  signerName: kubernetes.io/kube-apiserver-client
+  groups: 
+    - system:authenticated
+  expirationSeconds: 86400  # one day
+  usages:
+  - server auth
+  - key encryptment
+```
+
+```sh
+kubectl get csr
+```
+```sh
+kubectl certificate approve csr-name
+```
+```sh
+kubectl certificate deny csr-name
+```
+```sh
+kubectl get csr csr-name -o yaml
+```
+
+### Kubeconfig
+
+We can send request using kubectl command without kubeconfig as follows:
+```sh
+kubectl get pods --server server --client-key client.key --client-certificate client.crt --certificate-authority ca.crt
+```
+
+We can use a kubeconfig file to remove the need to add the details and send a request like:
+```sh
+kubectl get pods
+```
+
+Kubeconfig file has these sections:
+- Clusters (dev,prod)
+- Users (developer, admin, qa)
+- Contexts (user-to-cluster i.e developer@dev, admin@prod)
+
+Sample kubeconfig file:
+```yaml
+apiVersion: v1
+kind: Config
+current-context: developer@localcluster-context 
+clusters:
+- name: remotecluster
+  cluster:
+    certificate-authority: path/remote-ca.crt
+    server: https://ip:port
+- name: localcluster
+  cluster:
+    certificate-authority-data: BASE64 ENCODED CSR
+    server: https://ip:port
+contexts:
+- name: kube-admin@localcluster-context 
+  context:
+    cluster: remotecluster
+    user: kube-admin
+    namespace: kube-system
+- name: developer@localcluster-context 
+  context:
+    cluster: localcluster
+    user: developer
+users:
+- name: kube-admin
+  user:
+    client-certificate: path/admin-client.crt
+    client-key: path/client.key
+- name: developer
+  user:
+    client-certificate: path/dev-client.crt
+    client-key: path/client.key
+```
+
+```sh
+kubectl config view 
+kubectl config view --kubeconfig=path-to-config
+```
+
+```sh
+kubectl config use-context developer@localcluster-context 
+``` 
+```
+kubectl config set-credentials user --client-certificate=/path/user.crt
+```
+  
+### Authorization
+
+We set authorization mode in the kubeapiserver entry `--authorization-mode=Node,RBAC` and they are used following the order they were specified
+
+Role file:
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: developer
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "watch", "list"]
+    resourceNames:
+      - "devhour"
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch"]
+
+```
+Role binding file:
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: developer-binding
+subjects:
+- kind: Group
+  name: developers
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role #this must be Role or ClusterRole
+  name: developer # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+```
+
+```sh
+kubectl get roles 
+kubectl get rolebindings
+```
+
+```sh
+kubectl can-i get pods
+```
+
+```sh
+kubectl can-i get pods --as developer --namespace dev
+```
+
+```sh
+kubectl create role rolename --verb=create,list,delete --resource=pod                 
+```   
+
+```sh
+kubectl create rolebinding rolebindingname --role=rolename --user=user-to-bind
+```
+
+To view namespaced resources: `          --namespaced=true`
+We can use cluster roles on namespaced resources to give access to the objects in the whole cluster
+
+Cluster Role file:
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-admin
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "watch", "list"]
+```
+
+Cluster Role binding file:
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-binding
+subjects:
+- kind: Group
+  name: admin
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: cluster-admin # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io 
+```
+
+
+```sh
+kubectl create clusterrole clusterrolerolename --verb=* --resource=pod
+```   
+        
+```sh
+kubectl create clusterrolebinding clusterrolebindingname --clusterrole=clusterrolerolename --user=user-to-bind
+```
