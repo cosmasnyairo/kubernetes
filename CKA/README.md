@@ -17,6 +17,9 @@ A list of Kubernetes templates and commands i use
   - [Scheduler Profiles](#scheduler-profiles) 
 - [Logging and Monitoring](#monitoring-and-logging)
 - [OS Upgrades](#os-upgrades)
+- [Security](#security)
+  - [Authorization and Authentication](#authorization-and-authentication)
+
 ## Notes
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
 - kube-api sever - management component in kubernetes. Only component to interact with the etcd data store
@@ -447,3 +450,26 @@ scp my-server:/home test.txt
 ```
 
 More info: [Disaster Recovery for Kubernetes Clusters](https://www.youtube.com/watch?v=qRPNuT080Hk&ab_channel=CNCF%5BCloudNativeComputingFoundation%5D)
+
+## Security
+
+### Authorization and Authentication
+Authentication to the kube-api server is through:
+- Password file:
+  - Specify in kubeapiserver service or kubeapi server yaml file `--basic-auth-file=usercreds-basic.csv`
+  - The csv file should be in the fomat of:
+    ```csv
+    password,username,userid,groupid
+    ```
+  - If using api to authenticate pass via `curl -v -k https://masternod-ip:port/api/vi/pods -u "user1:password1"`
+- Token file:
+  - Specify in kubeapiserver service or kubeapi server yaml file `--token-auth-file=usercreds-token.csv`
+  - The csv file should be in the fomat of:
+    ```csv
+    token,username,userid,groupid
+    ```
+  - If using api to authenticate pass as a bearer token `curl -v -k https://masternod-ip:port/api/vi/pods --header "Authorization: Bearer <TOKEN>"`
+- Certificates
+- External Identity Service
+
+
