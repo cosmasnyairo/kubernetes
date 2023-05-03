@@ -22,6 +22,8 @@ A list of Kubernetes templates and commands i use
   - [TLS Certificates](#tls-certificates) 
   - [Kubeconfig](#kubeconfig)
   - [Authorization](#authorization)
+  - [Network Policy](#network-policy)
+- [Storage](#storage)
 ## Notes
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
 - kube-api sever - management component in kubernetes. Only component to interact with the etcd data store
@@ -655,7 +657,7 @@ kubectl create role rolename --verb=create,list,delete --resource=pod
 kubectl create rolebinding rolebindingname --role=rolename --user=user-to-bind
 ```
 
-To view namespaced resources: `          --namespaced=true`
+To view namespaced resources: ` --namespaced=true`
 We can use cluster roles on namespaced resources to give access to the objects in the whole cluster
 
 Cluster Role file:
@@ -693,4 +695,184 @@ kubectl create clusterrole clusterrolerolename --verb=* --resource=pod
         
 ```sh
 kubectl create clusterrolebinding clusterrolebindingname --clusterrole=clusterrolerolename --user=user-to-bind
+```
+
+For service accounts:
+```sh
+kubectl create sa service-account-name`
+```
+
+```sh
+kubectl create token service-account-name
+```
+
+For registry secrets:
+
+```sh 
+ kubectl create secret docker-registry NAME --docker-username=user --docker-password=password --docker-email=email --docker-server=string
+```
+
+### Network Policy
+
+By default kubernetes allows traffic from all pods to all destinations. 
+We can define egress and ingress rules to block traffic to and from pods.
+
+> If we add ingress rule, we don't need to specify the egress rule for the response as it is allowed automatically. 
+> We do need an egress rule if we need to send external api calls
+
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: network-policy-name
+spec:
+  podSelector:
+    matchLabels:
+      test: testing # pods matching this label will have the network policy applied on them
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        # The pod selector and namespace selector rules both need to be met.
+        # We can add a - before the namespace selector to make it that either of them need to be met.
+        - podSelector:
+            matchLabels:
+              name: pod-name # allow pods with this label to send ingress traffic
+          namespaceSelector:
+            matchLabels:
+              name: testing # specify pods from which namespace are allowed to to send ingress traffic
+        - ipBlock:
+            cidr: ip-cidr  # range of ip addresses allowed to send ingress traffic
+        ports:
+          - protocol: "TCP"
+            port: 3306 # port to recieve ingress traffic
+  egress:
+      - to:
+          - podSelector:
+              matchLabels:
+                name: pod-name  # send egress traffic to pods with this label 
+            namespaceSelector:
+              matchLabels:
+                name: testing # send egress traffic to pods in the namespace with this label
+          - ipBlock:
+            cidr: ip-cidr  # send egress traffic to this range of ip addresses
+          ports:
+            - protocol: "TCP"
+              port: 80 # port to send egress traffic to
+```
+
+## Storage
+
+To create a volume in a pod:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <<pod-name>>
+  labels:
+    app: <<label-value>>
+    type: <<label-value>>
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx
+      volumeMounts:
+        - mountPath: /opt
+          name: test-volume
+        - mountPath: /home/
+          name: ebs-volume
+  volumes:
+    - name: test-volume
+      hostPath:
+        path: /home/data
+        type: Directory
+    - name: ebs-volume
+      awsElasticBlockStore:
+        volumeID: <<vol-id>>
+        fsType: "ntfs"
+```
+
+Persistent Volumes: A cluster wide pool of storage volumes which we can assign to applications on the cluster.
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: persistent-vol
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  awsElasticBlockStore:
+    volumeID: <<vol-id>>
+    fsType: "ntfs"
+```
+Persistent Volumes Claim: Select storage from the persistent volumes created.
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: persitent-vol-claim
+spec:
+  resources:
+    requests:
+      storage: 500Mi
+  accessModes:
+    - ReadWriteOnce
+```
+
+Using Persistent Volumes Claim in a pod:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: <<pod-name>>
+  labels:
+    app: <<label-value>>
+    type: <<label-value>>
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx
+      volumeMounts:
+        - mountPath: /opt
+          name: pvc-volume
+  volumes:
+    - name: pvc-volume
+      persistentVolumeClaim:
+        claimName: persitent-vol-claim
+```
+
+Storage Classes: We don't need to creat a persitent volume. This is done automatically
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-storage
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+  fsType: ext4
+  encrypted: true
+```
+Persitent volume storage class:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: persitent-vol-claim
+spec:
+  resources:
+    requests:
+      storage: 500Mi
+  storageClassName: ebs-storage
+  accessModes:
+    - ReadWriteOnce
 ```
