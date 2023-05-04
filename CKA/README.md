@@ -24,13 +24,19 @@ A list of Kubernetes templates and commands i use
   - [Authorization](#authorization)
   - [Network Policy](#network-policy)
 - [Storage](#storage)
+- [Networking](#networking)
+  -[Network configuration - Cluster Nodes](#network-configuration---cluster-nodes)
+  -[Pod Networking ](#pod-networking)
+  -[Service Networking](#service-networking)
+  -[DNS](#dns)
+  
 ## Notes
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
 - kube-api sever - management component in kubernetes. Only component to interact with the etcd data store
 - kube-controller-manager - manages contollers in kubernetes and brings the system to the desired state
 - kube-scheduler - decides which pod goes to which node
 - kubelet - registers nodes,  creates pods on a nodes, monitors the pods and nodes
-- kube-proxy - 
+- kube-proxy - creates forwarding rules for nodes in the cluster
 
 ```
 If we install the cluster using kubeadmin, we can view :
@@ -875,4 +881,101 @@ spec:
   storageClassName: ebs-storage
   accessModes:
     - ReadWriteOnce
+```
+
+## Networking
+
+
+### Network configuration - Cluster Nodes
+Ports required for kubernetes: [Ports](https://kubernetes.io/docs/reference/networking/ports-and-protocols/)
+
+Find network interfaces:
+```sh
+ip a
+```
+
+Find bridges in network:
+```sh
+ip a show type bridge
+```
+
+List routes in the host
+```sh
+ip route
+```
+Get active internet connections
+```sh
+netstat -nplt
+```
+
+Get number of client connections on a program running on a port
+```sh
+netstat -anp | grep 'etcd\|2379' | wc -l
+```
+
+
+### Pod Networking 
+
+When a container is created, the kubelet looks at the cni configuration passed: 
+ - `network-plugin=cni`
+ - `cni-conf-dir=/etc/cni/net.d` to find our scipts name 
+ - `cni-bin-dir=/opt/cni/bin` to find the script 
+  
+The kubelet then runs the script with the add command with the name and namespce id of the container  `net-script.sh add <container> <namespace>`
+
+
+### Service Networking
+
+- Cluster Ip services are not bound to a specific node but are available to all pods cluster wide
+- Node Port services exposes application on a port on all nodes in the cluster.
+
+Kube proxy creates forward rules in all nodes such that when we try to reach the ip of a service, the request is forwarded to the ip and port of the pod.
+
+For kubeproxy, we set the proxymode : `--proxy-mode [userspace | iptables | ipvs]` If not set, if defaults to iptables.
+
+For services, we set the range in the kube-api-server `--service-cluster-ip-range <range>` which defaults to 10.0.0.0/24
+
+
+View rules created by kube proxy
+```sh 
+iptables -L -t nat | grep -i servicename
+```
+
+### DNS
+
+- Domain resolution for services: `web-service.namespace.svc.cluster-root-domain` i.e db-service.test-ns.svc.cluster.local
+- For pods , we replace the `.` with `-`. This is turned off by default.
+- Domain resolution for pods: `pod-ip-replaced-with-hyphens.namespace.pod.cluster-root-domain` i.e 10-244-1-2.test-ns.pod.cluster.local
+- Coredns watches the cluster for new pods or services and adds a record for them in it's database when they're created and it also creates a service named `kube-dns`.
+- Core file for coredns at : `etc/coredns/Corefile` and it's passed as a config map object
+- For kubelet, we have the ip of dns server and domain in its config
+
+
+Example Corefile
+```
+{
+    errors
+    health {
+       lameduck 5s
+    }
+    ready
+    kubernetes cluster.local in-addr.arpa ip6.arpa {
+       pods insecure
+       fallthrough in-addr.arpa ip6.arpa
+       ttl 30
+    }
+    prometheus :9153
+    forward . /etc/resolv.conf {
+       max_concurrent 1000
+    }
+    cache 30
+    loop
+    reload
+    loadbalance
+}
+```
+
+To get the service full domain name:                
+```sh
+host service-name
 ```
