@@ -29,7 +29,6 @@ A list of Kubernetes templates and commands i use
   -[Pod Networking ](#pod-networking)
   -[Service Networking](#service-networking)
   -[DNS](#dns)
-  
 ## Notes
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
 - kube-api sever - management component in kubernetes. Only component to interact with the etcd data store
@@ -67,6 +66,26 @@ kubectl run webapp-green --image=test --command -- --color=green
  kubectl run webapp-green --image=test -- --color=green
  ```
 
+Update env variables:
+```sh
+kubectl -n test set env deploy/test --containers=container-name DB_Host=mysql DB_User=user1 DB_Password=pass123
+```
+
+Check certificate:
+```sh
+openssl x509 -in /opt/cert.crt -text
+```
+
+Check service logs: 
+```sh
+journalctl -u service
+```
+
+```sh
+service servicename status
+```
+
+Kubelet file located at: `var/lib/kubelet/config.yaml`
 ## Scheduling
 
 ### Manual scheduling
