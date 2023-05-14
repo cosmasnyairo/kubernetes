@@ -29,6 +29,7 @@ A list of Kubernetes templates and commands i use
   -[Pod Networking ](#pod-networking)
   -[Service Networking](#service-networking)
   -[DNS](#dns)
+- [JSONPATH](#json-path)
 ## Notes
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
 - kube-api sever - management component in kubernetes. Only component to interact with the etcd data store
@@ -60,7 +61,7 @@ If we install the clustrer without using kubeadmin, we can view:
 - To pass commands to pods on creation:
 ```sh
 kubectl run webapp-green --image=test --command -- --color=green
-```
+```         
 - To pass args to pods on creation:
  ```sh
  kubectl run webapp-green --image=test -- --color=green
@@ -269,11 +270,15 @@ spec:
 ### Static Pods
 Pods created independently by the kubelet without help from the kubeapiserver.
 We can do this in the following ways:
+  - find the kubelet service config path:
+    ```sh
+    ps -aux | grep -i kubelet | grep -i config
+    ```
   - Configure the pod definition path in the kubelet service at with the following entry: `--pod-manifest-path=etc/kubernetes/manifests` 
   - Provide a `--config=mydefinition.yaml` entry in the kubelet service and have the `mydefinition.yaml` file contain the following:  
-  ```yaml
-    staticPodPath: etc/kubernetes/manifests
-  ```
+    ```yaml
+      staticPodPath: etc/kubernetes/manifests
+    ```
   - For both approaches we then place the pod definition files at the specified directory in our case it's `/etc/kubernetes/manifests` and view pods created via the `docker ps` command
 
 We can use static pods to deploy control plane components as static pods.
@@ -421,7 +426,7 @@ systemctl restart kubelet
 Step 2 (worker node-> one by one):
 
 ```sh
-kubeadm drain node01 # on master node
+kubectl drain node01 # on master node
 ```
 ```sh
 apt-get upgrade kubeadm=<version> -y
@@ -614,7 +619,11 @@ users:
 
 ```sh
 kubectl config view 
-kubectl config view --kubeconfig=path-to-config
+kubectl config view --kubeconfig path-to-config
+```
+
+```sh
+kubectl cluster-info --kubeconfig path-to-config
 ```
 
 ```sh
@@ -667,11 +676,11 @@ kubectl get rolebindings
 ```
 
 ```sh
-kubectl can-i get pods
+kubectl auth can-i get pods
 ```
 
 ```sh
-kubectl can-i get pods --as developer --namespace dev
+kubectl auth can-i get pods --as developer --namespace dev
 ```
 
 ```sh
@@ -997,4 +1006,59 @@ Example Corefile
 To get the service full domain name:                
 ```sh
 host service-name
+```
+
+
+## Json Path
+
+Kubernetes docs for json path: [Kubernetes Jsonpath](https://kubernetes.io/docs/reference/kubectl/jsonpath/)
+Use the following evaluator for json [JsonPath Evaluator](https://jsonpath.com/)
+
+```sh
+# Get all car names in an json data is equal to "abc"
+# $[] -> return a list
+# ?() -> if 
+# @ -> Each item in list
+
+$[?(@.name == "abc")]
+```
+
+```sh
+#Get name and image of first container of the first pod 
+kubectl get pods -o=jsonpath='{range .items[0].spec.containers[0]}{.name}{"\n"}{.image}' --sort-by=.name
+```
+
+
+```sh
+#Fetch node names 
+kubectl get nodes -ojsonpath='{range .items[*].metadata}{.name}
+```
+
+```sh
+# Sort persisten volumes by capacity
+kubectl get pv --sort-by=.spec.capacity.storage
+```
+
+kubectl get pv --sort-by=.spec.capacity.storage -o=custom-columns=NAME:.metadata.name,CAPACITY:.spec.capacity.storage 
+```sh
+```
+
+```sh 
+# get names of user test in config
+kubectl config view --kubeconfig=custom-config -o jsonpath="{.contexts[?(@.context.user=='test')].name}"
+```
+
+```sh
+#Get deployments as per this format:
+# DEPLOYMENT   CONTAINER_IMAGE   READY_REPLICAS   NAMESPACE
+
+kubectl get deploy -n admin2406 --sort-by=.metadata.name -o=custom-columns=DEPLOYMENT:.metadata.name,CONTAINER_IMAGE:.spec.template.spec.containers.*.image,READY_REPLICAS:.status.readyReplicas,NAMESPACE:.metadata.namespace
+```
+
+```sh
+kubectl get svc --sort-by=.metadata.name  -o=custom-columns=NAME:.metadata.name,PORTNAME:.spec.ports.name 
+```
+
+```sh
+k get nodes -ojsonpath='{range .items[*]}InternalIP of {.metadata.name} {.status.addresses[?(@.type=="InternalIP")].address} {end}'
 ```
