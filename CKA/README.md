@@ -31,6 +31,27 @@ A list of Kubernetes templates and commands i use
   -[DNS](#dns)
 - [JSONPATH](#json-path)
 ## Notes
+
+Commands for terminal in exam:
+
+```sh
+# in .bashrc
+alias k="kubectl"
+export drc="--dry-run=client -oyaml"
+export drs="--dry-run=server -oyaml"
+export kre="kubectl replace --force -f"
+# in .vimrc
+set expandtab
+set tabstop=2
+set shiftwidth=2
+set nu
+set autoindent
+```
+
+```sh
+kubectl explain po.spec
+```
+
 - etcd - key store for information about the cluster i.e nodes, pods, roles, secrets
 - kube-api sever - management component in kubernetes. Only component to interact with the etcd data store
 - kube-controller-manager - manages contollers in kubernetes and brings the system to the desired state
@@ -57,6 +78,18 @@ If we install the clustrer without using kubeadmin, we can view:
 ```
 
 - Kubelet config is at: `/var/lib/kubelet/config.yaml` for each node
+
+
+
+- Test commands
+
+```sh
+kubectl run webapp-green --image=test --dry-run=server -oyaml
+```
+
+```sh
+kubectl auth can-i
+```
 
 - To pass commands to pods on creation:
 ```sh
@@ -274,6 +307,7 @@ We can do this in the following ways:
     ```sh
     ps -aux | grep -i kubelet | grep -i config
     ```
+  - check the node's `/var/lib/kubelet/config.yaml` path
   - Configure the pod definition path in the kubelet service at with the following entry: `--pod-manifest-path=etc/kubernetes/manifests` 
   - Provide a `--config=mydefinition.yaml` entry in the kubelet service and have the `mydefinition.yaml` file contain the following:  
     ```yaml
@@ -481,6 +515,11 @@ scp test.txt my-server:/home
 ```
 ```sh
 scp my-server:/home test.txt 
+```
+
+To join cluster:
+```sh
+kubeadm token create --print-join-command
 ```
 
 More info: [Disaster Recovery for Kubernetes Clusters](https://www.youtube.com/watch?v=qRPNuT080Hk&ab_channel=CNCF%5BCloudNativeComputingFoundation%5D)
@@ -1013,6 +1052,11 @@ host service-name
 
 Kubernetes docs for json path: [Kubernetes Jsonpath](https://kubernetes.io/docs/reference/kubectl/jsonpath/)
 Use the following evaluator for json [JsonPath Evaluator](https://jsonpath.com/)
+
+```sh
+#get field names
+k explain deploy.spec --recursive 
+```
 
 ```sh
 # Get all car names in an json data is equal to "abc"
