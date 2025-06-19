@@ -1,3 +1,6 @@
 labs
 lectures
 .vscode
+*.crt
+*.key
+*.csr

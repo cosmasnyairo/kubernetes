@@ -1,0 +1,11 @@
+[Unit]
+Description=kube-apiserver
+Documentation=https://github.com/coreos
+
+[Service]
+ExecStart=/usr/local/bin/kube-apiserver --advertise-address=172.158.0.62 --etcd-cafile=/opt/cks/certs/cert-authority.crt --etcd-certfile=/opt/cks/certs/kube-apiserver.crt --etcd-keyfile=/opt/cks/certs/kube-apiserver.key --service-cluster-ip-range 10.0.0.0/24 --service-account-issuer=https://127.0.0.1:6443 --service-account-key-file=/opt/cks/certs/service-account.crt --service-account-signing-key-file=/opt/cks/certs/service-account.key --etcd-servers=https://127.0.0.1:2379
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
